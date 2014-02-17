@@ -23,7 +23,7 @@ namespace DnsSequenceSearcher
         private static int searchStringLength;
         private static int chunkingSize = 0;
         private static ConcurrentBag<string> outPutFromTasks = new ConcurrentBag<string>();
-        private static Dictionary<int, int> shiftValues = new Dictionary<int, int>();
+        private static int[] shiftValues = new int[3000];
         private static List<string> possibleTwoCharacterCombinations = new List<string>()
                                                                 {
                                                                     "AA", "AC", "AT", "AG",
@@ -70,10 +70,10 @@ namespace DnsSequenceSearcher
             if(arguments.ContainsKey("/I") && arguments.ContainsKey("/S"))
             {
                 var inputFileName = arguments["/I"];
-                var fileSize = 0;
+                double fileSize = 0;
                 try
                 {
-                    fileSize = Convert.ToInt32(arguments["/S"]);
+                    fileSize = Convert.ToDouble(arguments["/S"]);
                 }
                 catch(Exception)
                 {
@@ -140,7 +140,7 @@ namespace DnsSequenceSearcher
             Thread.Sleep(0);
             Task.WaitAll(tasks.ToArray());
         }
-        
+
         private static string ProcessFileChunk(ref FileStream fileStream, int chunkingSize)
         {
             int count;
@@ -224,7 +224,7 @@ namespace DnsSequenceSearcher
         /// </summary>
         private static void CalculateShiftValues()
         {
-            Parallel.ForEach(possibleTwoCharacterCombinations, (x) => { shiftValues.Add((x[0] << 5) ^ x[1], CalculateShiftValue(x[0], x[1])); });
+            Parallel.ForEach(possibleTwoCharacterCombinations, (x) => { shiftValues[(x[0] << 5) ^ x[1]] = CalculateShiftValue(x[0], x[1]); });
         }
         
         private static void GetProcessFileChunkResult(ref FileStream fileStream)
